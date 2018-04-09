@@ -1,23 +1,29 @@
 class JobScheduler
+  def process(job)
+    job_name = job.keys.first.to_s
+    job_dep = job[job_name]
+    unless job_dep.empty?
+      dep = @jobs.find { |j| j.keys.first.to_s == job_dep }
+      unless dep.nil?
+        @jobs = @jobs - [dep]
+        process(dep)
+      end
+    end
+
+    @output << job_name
+  end
+
   def execute(job_definition)
-    jobs = job_definition.each_line.map do |line|
+    @jobs = job_definition.each_line.map do |line|
       name, dep = line.split('=>').map { |v| v.strip! }
       { name => dep }
     end
 
-    output = ''
-    while jobs.any?
-      current_job = jobs.shift(1).first
-      job_name = current_job.keys.first.to_s
-      job_dep = current_job[job_name]
-      unless job_dep.empty?
-        output << job_dep
-        jobs.delete_if { |job| job.keys.first.to_s == job_dep }
-      end
-
-      output << job_name
+    @output = ''
+    while @jobs.any?
+      process(@jobs.shift(1).first)
     end
 
-    output
+    @output
   end
 end
