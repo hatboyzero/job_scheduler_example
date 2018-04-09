@@ -1,4 +1,5 @@
 require 'job_scheduler'
+require 'circular_dependency_error'
 
 RSpec.describe JobScheduler, '#execute' do
   before(:each) do
@@ -48,5 +49,14 @@ f =>
 EOM
     expect(output).to be_a(String)
     expect(output).to eq('afcbde')
+  end
+
+  it 'generates an error on jobs that depend on themselves' do
+    job_definition = <<EOM
+a => 
+b =>
+c => c
+EOM
+    expect{@job_scheduler.execute job_definition}.to raise_error(CircularDependencyError)
   end
 end

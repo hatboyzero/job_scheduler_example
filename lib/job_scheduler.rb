@@ -3,6 +3,10 @@ class JobScheduler
     job_name = job.keys.first.to_s
     job_dep = job[job_name]
     unless job_dep.empty?
+      if job_name == job_dep
+        raise CircularDependencyError.new
+      end
+
       dep = @jobs.find { |j| j.keys.first.to_s == job_dep }
       unless dep.nil?
         @jobs = @jobs - [dep]
