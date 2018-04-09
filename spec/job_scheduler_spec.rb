@@ -59,4 +59,16 @@ c => c
 EOM
     expect{@job_scheduler.execute job_definition}.to raise_error(CircularDependencyError)
   end
+
+  it 'generates an error on jobs that have circular dependencies' do
+    job_definition = <<EOM
+a =>
+b => c
+c => f
+d => a
+e =>
+f => b
+EOM
+    expect{@job_scheduler.execute job_definition}.to raise_error(CircularDependencyError)
+  end
 end
